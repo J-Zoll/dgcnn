@@ -37,9 +37,9 @@ def _init_():
     os.system('cp data.py checkpoints' + '/' + args.exp_name + '/' + 'data.py.backup')
 
 def train(args, io):
-    train_loader = DataLoader(ModelNet40(partition='train', num_points=args.num_points), num_workers=8,
+    train_loader = DataLoader(ModelNet40(partition='train', num_points=args.num_points), num_workers=args.dataloader_workers,
                               batch_size=args.batch_size, shuffle=True, drop_last=True)
-    test_loader = DataLoader(ModelNet40(partition='test', num_points=args.num_points), num_workers=8,
+    test_loader = DataLoader(ModelNet40(partition='test', num_points=args.num_points), num_workers=args.dataloader_workers,
                              batch_size=args.test_batch_size, shuffle=True, drop_last=False)
 
     device = torch.device("cuda" if args.cuda else "cpu")
@@ -205,6 +205,8 @@ if __name__ == "__main__":
                         help='Num of nearest neighbors to use')
     parser.add_argument('--model_path', type=str, default='', metavar='N',
                         help='Pretrained model path')
+    parser.add_argument('--dataloader_workers', type=int, default=2, metavar='N',
+                        help='Number of workers in the dataloader')
     args = parser.parse_args()
 
     _init_()
