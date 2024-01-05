@@ -25,6 +25,7 @@ from util import cal_loss, IOStream
 import sklearn.metrics as metrics
 import numpy as np
 import time
+import datetime
 
 
 def _init_():
@@ -135,11 +136,11 @@ def train(args, io):
         test_pred = np.concatenate(test_pred)
         test_acc = metrics.accuracy_score(test_true, test_pred)
         avg_per_class_acc = metrics.balanced_accuracy_score(test_true, test_pred)
-        outstr = 'epoch %d, train loss: %.6f, test acc: %.6f, test avg acc: %.6f, test time: %.6f' % (epoch,
+        outstr = 'epoch %d, test  loss: %.6f, test  acc: %.6f, test  avg acc: %.6f, test  time: %.6f' % (epoch,
                                                                               test_loss*1.0/count,
                                                                               test_acc,
                                                                               avg_per_class_acc,
-                                                                              train_time)
+                                                                              test_time)
         io.cprint(outstr)
         if test_acc >= best_test_acc:
             best_test_acc = test_acc
@@ -182,9 +183,11 @@ def test(args, io):
 
 
 if __name__ == "__main__":
+    timestamp = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
+
     # Training settings
     parser = argparse.ArgumentParser(description='Point Cloud Recognition')
-    parser.add_argument('--exp_name', type=str, default='exp', metavar='N',
+    parser.add_argument('--exp_name', type=str, default=f'exp_{timestamp}', metavar='N',
                         help='Name of the experiment')
     parser.add_argument('--model', type=str, default='dgcnn', metavar='N',
                         choices=['pointnet', 'dgcnn'],
