@@ -24,6 +24,7 @@ from torch.utils.data import DataLoader
 from util import cal_loss, IOStream
 import sklearn.metrics as metrics
 import numpy as np
+import time
 
 
 def _init_():
@@ -74,6 +75,7 @@ def train(args, io):
         ####################
         # Train
         ####################
+        t_start = time.time()
         train_loss = 0.0
         count = 0.0
         model.train()
@@ -93,20 +95,24 @@ def train(args, io):
             train_loss += loss.item() * batch_size
             train_true.append(label.cpu().numpy())
             train_pred.append(preds.detach().cpu().numpy())
+        t_end = time.time()
+        train_time = t_end - t_start
         train_true = np.concatenate(train_true)
         train_pred = np.concatenate(train_pred)
-        outstr = 'Train %d, loss: %.6f, train acc: %.6f, train avg acc: %.6f' % (epoch,
+        outstr = 'epoch %d, train loss: %.6f, train acc: %.6f, train avg acc: %.6f, train time: %.6f' % (epoch,
                                                                                  train_loss*1.0/count,
                                                                                  metrics.accuracy_score(
                                                                                      train_true, train_pred),
                                                                                  metrics.balanced_accuracy_score(
-                                                                                     train_true, train_pred))
+                                                                                     train_true, train_pred),
+                                                                                     train_time)
         io.cprint(outstr)
         scheduler.step()
 
         ####################
         # Test
         ####################
+        t_start = time.time()
         test_loss = 0.0
         count = 0.0
         model.eval()
@@ -123,14 +129,17 @@ def train(args, io):
             test_loss += loss.item() * batch_size
             test_true.append(label.cpu().numpy())
             test_pred.append(preds.detach().cpu().numpy())
+        t_end = time.time()
+        test_time = t_end - t_start
         test_true = np.concatenate(test_true)
         test_pred = np.concatenate(test_pred)
         test_acc = metrics.accuracy_score(test_true, test_pred)
         avg_per_class_acc = metrics.balanced_accuracy_score(test_true, test_pred)
-        outstr = 'Test %d, loss: %.6f, test acc: %.6f, test avg acc: %.6f' % (epoch,
+        outstr = 'epoch %d, train loss: %.6f, test acc: %.6f, test avg acc: %.6f, test time: %.6f' % (epoch,
                                                                               test_loss*1.0/count,
                                                                               test_acc,
-                                                                              avg_per_class_acc)
+                                                                              avg_per_class_acc,
+                                                                              train_time)
         io.cprint(outstr)
         if test_acc >= best_test_acc:
             best_test_acc = test_acc
@@ -152,6 +161,7 @@ def test(args, io):
     count = 0.0
     test_true = []
     test_pred = []
+    t_start = time.time()
     for data, label in test_loader:
 
         data, label = data.to(device), label.to(device).squeeze()
@@ -161,11 +171,13 @@ def test(args, io):
         preds = logits.max(dim=1)[1]
         test_true.append(label.cpu().numpy())
         test_pred.append(preds.detach().cpu().numpy())
+    t_end = time.time()
+    test_time = t_end - t_start
     test_true = np.concatenate(test_true)
     test_pred = np.concatenate(test_pred)
     test_acc = metrics.accuracy_score(test_true, test_pred)
     avg_per_class_acc = metrics.balanced_accuracy_score(test_true, test_pred)
-    outstr = 'Test :: test acc: %.6f, test avg acc: %.6f'%(test_acc, avg_per_class_acc)
+    outstr = 'Test :: test acc: %.6f, test avg acc: %.6f, test time: %.6f'%(test_acc, avg_per_class_acc, test_time)
     io.cprint(outstr)
 
 
