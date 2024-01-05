@@ -69,7 +69,6 @@ def train(args, io):
 
     best_test_acc = 0
     for epoch in range(args.epochs):
-        scheduler.step()
         ####################
         # Train
         ####################
@@ -101,6 +100,7 @@ def train(args, io):
                                                                                  metrics.balanced_accuracy_score(
                                                                                      train_true, train_pred))
         io.cprint(outstr)
+        scheduler.step()
 
         ####################
         # Test
