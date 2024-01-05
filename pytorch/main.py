@@ -11,6 +11,7 @@
 from __future__ import print_function
 import os
 import argparse
+import random
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -22,6 +23,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 from util import cal_loss, IOStream
 import sklearn.metrics as metrics
+import numpy as np
 
 
 def _init_():
@@ -222,6 +224,8 @@ if __name__ == "__main__":
         torch.cuda.manual_seed(args.seed)
     else:
         io.cprint('Using CPU')
+    random.seed(args.seed)
+    np.random.seed(args.seed)
 
     if not args.eval:
         train(args, io)
